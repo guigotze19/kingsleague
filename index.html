@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kings League Simulator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">KL</span>
+        <div>
+          <h1>Kings League Simulator</h1>
+          <p>Season 1</p>
+        </div>
+      </div>
+
+      <nav class="main-menu" aria-label="Main menu">
+        <button class="nav-item active" data-section="dashboard">Dashboard</button>
+        <button class="nav-item" data-section="teams">Teams</button>
+        <button class="nav-item" data-section="players">Players</button>
+        <button class="nav-item" data-section="league">Kings League</button>
+        <button class="nav-item" data-section="prince-cup">Prince Cup</button>
+        <button class="nav-item" data-section="joker-supercup">Joker Supercup</button>
+        <button class="nav-item" data-section="calendar">Calendar</button>
+        <button class="nav-item" data-section="stats">Stats</button>
+        <button class="nav-item" data-section="match-center">Match Center</button>
+        <button class="nav-item" data-section="season-review">Season Review</button>
+        <button class="nav-item" data-section="transfer-window">Transfer Window</button>
+        <button class="nav-item" data-section="history">History</button>
+        <button class="nav-item" data-section="settings">Settings</button>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Dark dashboard football manager</p>
+          <h2 id="page-title">Dashboard</h2>
+          <p id="page-subtitle" class="page-subtitle">Season overview, table, and next fixture.</p>
+        </div>
+        <div class="season-status">
+          <span id="round-status">Round 1 / 34</span>
+          <span id="save-status">Auto-saved</span>
+        </div>
+      </header>
+
+      <section id="dashboard" class="page active-page">
+        <div class="summary-grid">
+          <article class="stat-panel">
+            <span>Teams</span>
+            <strong id="team-count">18</strong>
+          </article>
+          <article class="stat-panel">
+            <span>Rounds</span>
+            <strong>34</strong>
+          </article>
+          <article class="stat-panel">
+            <span>Matches Played</span>
+            <strong id="matches-played">0</strong>
+          </article>
+          <article class="stat-panel">
+            <span>Leader</span>
+            <strong id="league-leader">-</strong>
+          </article>
+        </div>
+
+        <div class="dashboard-layout">
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>League Table</h3>
+              <button id="quick-round" class="primary-action">Simulate Round</button>
+            </div>
+            <div class="table-wrap">
+              <table id="league-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Team</th>
+                    <th>Pts</th>
+                    <th>W</th>
+                    <th>D</th>
+                    <th>L</th>
+                    <th>GF</th>
+                    <th>GA</th>
+                    <th>GD</th>
+                    <th>Form</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+
+          <aside class="panel next-fixture-card">
+            <div class="panel-heading">
+              <h3>Next Match</h3>
+            </div>
+            <div id="next-match" class="next-match"></div>
+            <button id="quick-match" class="secondary-action">Simulate One Match</button>
+          </aside>
+        </div>
+      </section>
+
+      <section id="teams" class="page">
+        <section class="panel">
+          <div class="panel-heading">
+            <h3>Teams</h3>
+          </div>
+          <div id="teams-grid" class="teams-grid"></div>
+        </section>
+      </section>
+
+      <section id="players" class="page">
+        <section class="panel">
+          <div class="panel-heading">
+            <h3>Players</h3>
+          </div>
+          <div class="transfer-form player-filters">
+            <label>Search
+              <input id="player-search" type="text" placeholder="Search by name">
+            </label>
+            <label>Team
+              <select id="players-team-filter"></select>
+            </label>
+            <label>Position
+              <select id="players-position-filter"></select>
+            </label>
+            <label>Sort
+              <select id="players-sort">
+                <option value="overall">Overall</option>
+                <option value="name">Name</option>
+                <option value="team">Team</option>
+                <option value="position">Position</option>
+              </select>
+            </label>
+          </div>
+          <div id="players-list" class="players-list"></div>
+        </section>
+      </section>
+
+      <section id="league" class="page">
+        <section class="panel">
+          <div class="panel-heading">
+            <h3>Kings League Table</h3>
+            <button id="league-round" class="primary-action">Simulate Round</button>
+          </div>
+          <div class="table-wrap">
+            <table id="league-table-full">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Team</th>
+                  <th>P</th>
+                  <th>Pts</th>
+                  <th>W</th>
+                  <th>D</th>
+                  <th>L</th>
+                  <th>GF</th>
+                  <th>GA</th>
+                  <th>GD</th>
+                  <th>Form</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section id="calendar" class="page">
+        <section class="panel">
+          <div class="panel-heading">
+            <h3>Calendar</h3>
+            <select id="calendar-filter" aria-label="Filter calendar">
+              <option value="all">All Competitions</option>
+              <option value="kings">Kings League</option>
+              <option value="prince">Prince Cup</option>
+              <option value="supercup">Joker Supercup</option>
+            </select>
+          </div>
+          <div id="fixture-list" class="fixture-list"></div>
+        </section>
+      </section>
+
+      <section id="prince-cup" class="page">
+        <div class="dashboard-layout">
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>Prince Cup Bracket</h3>
+              <button id="simulate-prince-match" class="primary-action">Simulate Cup Match</button>
+            </div>
+            <div id="prince-status" class="competition-status"></div>
+            <div id="prince-bracket" class="bracket-grid"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>Prince Cup Details</h3>
+              <button id="simulate-prince-stage" class="secondary-action">Simulate Current Stage</button>
+            </div>
+            <div id="prince-details" class="fixture-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="joker-supercup" class="page">
+        <div class="dashboard-layout">
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>Joker Supercup</h3>
+              <button id="simulate-supercup" class="primary-action">Simulate Supercup</button>
+            </div>
+            <div id="supercup-status" class="competition-status"></div>
+            <div id="supercup-fixture" class="fixture-list"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>Qualified Teams</h3>
+            </div>
+            <div id="supercup-teams" class="fixture-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="stats" class="page">
+        <section class="panel stats-filter-panel">
+          <div class="transfer-form">
+            <label>Competition
+              <select id="stats-competition-filter">
+                <option value="all">All competitions</option>
+                <option value="Kings League">Kings League</option>
+                <option value="Prince Cup">Prince Cup</option>
+                <option value="Joker Supercup">Joker Supercup</option>
+              </select>
+            </label>
+            <label>Team
+              <select id="stats-team-filter"></select>
+            </label>
+            <label>Season
+              <select id="stats-season-filter"></select>
+            </label>
+          </div>
+        </section>
+        <div class="dashboard-layout stats-layout">
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>Goals</h3>
+            </div>
+            <div id="stats-goals" class="ranking-list"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>Assists</h3>
+            </div>
+            <div id="stats-assists" class="ranking-list"></div>
+          </section>
+          <section class="panel"><div class="panel-heading"><h3>Yellow Cards</h3></div><div id="stats-yellow-cards" class="ranking-list"></div></section>
+          <section class="panel"><div class="panel-heading"><h3>Red Cards</h3></div><div id="stats-red-cards" class="ranking-list"></div></section>
+          <section class="panel"><div class="panel-heading"><h3>Clean Sheets</h3></div><div id="stats-clean-sheets" class="ranking-list"></div></section>
+          <section class="panel"><div class="panel-heading"><h3>POTM</h3></div><div id="stats-potm" class="ranking-list"></div></section>
+          <section class="panel"><div class="panel-heading"><h3>Average Rating</h3></div><div id="stats-average-rating" class="ranking-list"></div></section>
+          <section class="panel"><div class="panel-heading"><h3>Own Goals</h3></div><div id="stats-own-goals" class="ranking-list"></div></section>
+        </div>
+      </section>
+
+      <section id="match-center" class="page">
+        <div class="match-center-layout">
+          <section class="panel match-control-panel">
+            <div class="panel-heading">
+              <h3>Match Center</h3>
+            </div>
+            <div id="match-control" class="match-control"></div>
+            <div class="action-row match-center-actions">
+              <button id="simulate-match" class="primary-action">Simulate Instantly</button>
+              <button id="simulate-round" class="secondary-action">Simulate Full Round</button>
+            </div>
+          </section>
+
+          <section class="panel match-details-panel">
+            <div class="panel-heading">
+              <h3>Match Details</h3>
+            </div>
+            <div id="match-summary" class="match-summary empty-state">No match simulated yet.</div>
+          </section>
+
+          <section class="panel match-feed-panel">
+            <div class="panel-heading">
+              <h3>Match Feed</h3>
+            </div>
+            <div id="match-feed" class="match-feed empty-state">No match feed yet.</div>
+          </section>
+        </div>
+      </section>
+
+      <section id="history" class="page">
+        <section class="panel">
+          <div class="panel-heading">
+            <h3>History</h3>
+          </div>
+          <div id="history-list" class="history-list"></div>
+        </section>
+      </section>
+
+      <section id="season-review" class="page">
+        <section class="panel">
+          <div class="panel-heading">
+            <h3>Season Review</h3>
+            <div class="action-row compact-actions">
+              <button id="finish-season" class="primary-action">Finish Season</button>
+              <button id="open-transfer-window" class="secondary-action">Open Transfer Window</button>
+              <button id="start-next-season" class="secondary-action">Start Next Season</button>
+            </div>
+          </div>
+          <div id="season-review-content" class="season-review-grid"></div>
+        </section>
+      </section>
+
+      <section id="transfer-window" class="page">
+        <div class="dashboard-layout">
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>Transfer Window</h3>
+            </div>
+            <div class="transfer-form">
+              <label>Player
+                <select id="transfer-player"></select>
+              </label>
+              <label>Team
+                <select id="transfer-team"></select>
+              </label>
+              <label>Name
+                <input id="player-name" type="text">
+              </label>
+              <label>Nationality
+                <input id="player-nationality" type="text">
+              </label>
+              <label>Position
+                <select id="player-position">
+                  <option>GK</option>
+                  <option>CB</option>
+                  <option>RB</option>
+                  <option>LB</option>
+                  <option>CDM</option>
+                  <option>CM</option>
+                  <option>CAM</option>
+                  <option>LW</option>
+                  <option>RW</option>
+                  <option>ST</option>
+                </select>
+              </label>
+              <label>Player Style
+                <input id="player-style" type="text">
+              </label>
+              <label>Overall
+                <input id="player-overall" type="number" min="1" max="99">
+              </label>
+              <label>Pace
+                <input id="player-pace" type="number" min="35" max="99">
+              </label>
+              <label>Attacking
+                <input id="player-attacking" type="number" min="35" max="99">
+              </label>
+              <label>Defending
+                <input id="player-defending" type="number" min="35" max="99">
+              </label>
+              <label>Finishing
+                <input id="player-finishing" type="number" min="35" max="99">
+              </label>
+              <label>Passing
+                <input id="player-passing" type="number" min="35" max="99">
+              </label>
+              <label>Crossing
+                <input id="player-crossing" type="number" min="35" max="99">
+              </label>
+              <label>Dribbling
+                <input id="player-dribbling" type="number" min="35" max="99">
+              </label>
+              <label>Heading
+                <input id="player-heading" type="number" min="35" max="99">
+              </label>
+              <label>Jumping
+                <input id="player-jumping" type="number" min="35" max="99">
+              </label>
+              <label>Stamina
+                <input id="player-stamina" type="number" min="35" max="99">
+              </label>
+              <label>Strength
+                <input id="player-strength" type="number" min="35" max="99">
+              </label>
+              <label>Discipline
+                <input id="player-discipline" type="number" min="35" max="99">
+              </label>
+              <label>Penalties
+                <input id="player-penalties" type="number" min="35" max="99">
+              </label>
+              <label>Goalkeeping
+                <input id="player-goalkeeping" type="number" min="35" max="99">
+              </label>
+            </div>
+            <div class="action-row">
+              <button id="move-player" class="primary-action">Move Player</button>
+              <button id="add-player" class="secondary-action">Add New Player</button>
+              <button id="save-player" class="secondary-action">Save Player Edits</button>
+              <button id="regenerate-attributes" class="secondary-action">Regenerate Attributes</button>
+              <button id="regenerate-auto-style" class="secondary-action">Regenerate Auto Style</button>
+              <button id="set-manual-attributes" class="secondary-action">Set Manual Attributes</button>
+              <button id="set-auto-attributes" class="secondary-action">Set Auto Attributes</button>
+              <button id="remove-player" class="danger-action">Remove Player</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>Transfer Log</h3>
+            </div>
+            <div id="transfer-log" class="history-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="settings" class="page">
+        <section class="panel settings-panel">
+          <div class="panel-heading">
+            <h3>Settings</h3>
+          </div>
+          <h4 class="section-kicker">Simulation Balance</h4>
+          <div class="settings-grid">
+            <label>Randomness Level
+              <input id="setting-randomness-level" type="range" min="0" max="100" step="5">
+              <span id="setting-randomness-level-value"></span>
+            </label>
+            <label>Goal Frequency
+              <input id="setting-goal-frequency" type="range" min="50" max="150" step="5">
+              <span id="setting-goal-frequency-value"></span>
+            </label>
+            <label>Card Frequency
+              <input id="setting-card-frequency" type="range" min="50" max="160" step="5">
+              <span id="setting-card-frequency-value"></span>
+            </label>
+            <label>Injury Frequency
+              <input id="setting-injury-frequency" type="range" min="0" max="100" step="5">
+              <span id="setting-injury-frequency-value"></span>
+            </label>
+            <label>Favorite Advantage
+              <input id="setting-favorite-advantage" type="range" min="50" max="150" step="5">
+              <span id="setting-favorite-advantage-value"></span>
+            </label>
+            <label>Home Advantage
+              <input id="setting-home-advantage" type="range" min="0" max="160" step="5">
+              <span id="setting-home-advantage-value"></span>
+            </label>
+            <label>Upset Chance
+              <input id="setting-upset-chance" type="range" min="50" max="160" step="5">
+              <span id="setting-upset-chance-value"></span>
+            </label>
+            <label>Substitution Frequency
+              <input id="setting-substitution-frequency" type="range" min="0" max="160" step="5">
+              <span id="setting-substitution-frequency-value"></span>
+            </label>
+          </div>
+          <h4 class="section-kicker">Save / Backup</h4>
+          <div class="settings-actions">
+            <button id="export-save" class="secondary-action">Export Save JSON</button>
+            <label class="import-button">
+              Import Save JSON
+              <input id="import-save" type="file" accept="application/json">
+            </label>
+          </div>
+          <h4 class="section-kicker danger-kicker">Danger Zone</h4>
+          <div class="settings-actions">
+            <button id="reset-save" class="danger-action">Reset Save</button>
+          </div>
+          <textarea id="export-output" readonly placeholder="Exported save data will appear here."></textarea>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
