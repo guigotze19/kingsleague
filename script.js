@@ -1,3 +1,4 @@
+console.log("%c✅ Kings League — visual novo carregado (campo + cores) · build pitch-kits-1", "color:#2e90ff;font-weight:bold;");
 const SAVE_KEY = "kings-league-simulator-save-v3";
 const OLD_SAVE_KEYS = [
   "kings-league-simulator-save-v2",
