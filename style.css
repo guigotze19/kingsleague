@@ -120,6 +120,15 @@ button, select, input, textarea { outline-color: rgba(46, 144, 255, 0.55); }
   box-shadow: 0 8px 22px rgba(46, 144, 255, 0.35), inset 0 0 0 2px rgba(255, 255, 255, 0.25);
 }
 
+.brand-logo {
+  flex: 0 0 auto;
+  width: auto;
+  height: 46px;
+  display: block;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
 .brand h1 {
   margin: 0;
   color: var(--text);
