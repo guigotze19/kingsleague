@@ -79,6 +79,33 @@ const FORMATION_COORDS = {
   "5-4-1":   [[50,90],[88,67],[68,73],[50,76],[32,73],[12,67],[82,45],[61,48],[39,48],[18,45],[50,16]],
   "3-5-2":   [[50,90],[68,73],[50,76],[32,73],[50,57],[70,49],[30,49],[85,40],[15,40],[62,16],[38,16]]
 };
+// Team kit colors (applied at render time). color2 = split/second color.
+const TEAM_KITS = {
+  "olympia":       { color: "#161616" },
+  "wolverines":    { color: "#2e6fff" },
+  "west orange":   { color: "#ff7a1a" },
+  "furia":         { color: "#161616" },
+  "batista":       { color: "#e23b3b", color2: "#2e6fff" },
+  "g3x":           { color: "#1fa2ff" },
+  "dp tigers":     { color: "#ff7a1a", color2: "#161616" },
+  "mibr":          { color: "#3b5bdb" },
+  "horizon":       { color: "#8b3dff" },
+  "loud":          { color: "#16c265" },
+  "keyd":          { color: "#6d28d9" },
+  "nation":        { color: "#ff4fa3" },
+  "legacy":        { color: "#e23b3b" },
+  "cnb":           { color: "#1e88e5" },
+  "black dragons": { color: "#161616" },
+  "dinasty":       { color: "#e0a83b" },
+  "vorax":         { color: "#a855f7" }
+};
+function getTeamKit(team) { return (team && team.name && TEAM_KITS[team.name.toLowerCase()]) || null; }
+function getTeamColor(team) { const k = getTeamKit(team); return (k && k.color) || (team && team.color) || "#2e90ff"; }
+function getTeamColor2(team) { const k = getTeamKit(team); return (k && k.color2) || null; }
+function getTeamColorCss(team) {
+  const c = getTeamColor(team), c2 = getTeamColor2(team);
+  return c2 ? `linear-gradient(90deg, ${c} 0 50%, ${c2} 50% 100%)` : c;
+}
 const COMPETITION_KEYS = ["all", "Kings League", "Prince Cup", "Joker Supercup"];
 const DEFAULT_SIMULATION_SETTINGS = {
   randomnessLevel: 50,
@@ -3204,11 +3231,22 @@ function playerLine(player) {
   return `<span>${player.position} ${player.name} - OVR ${player.overall}${player.playerStyle ? ` - ${player.playerStyle}` : ""}</span>`;
 }
 
-function pitchJerseySvg(color) {
+function pitchJerseySvg(color, color2) {
   const c = color || "#2e90ff";
+  const path = "M30 8 L18 14 L7 31 L20 41 L26 33 L26 84 L74 84 L74 33 L80 41 L93 31 L82 14 L70 8 C64 19 36 19 30 8 Z";
+  const outline = `<path d="${path}" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="2" stroke-linejoin="round"/>`;
+  if (color2 && color2 !== c) {
+    const id = "kit" + Math.random().toString(36).slice(2, 9);
+    return `<svg class="pitch-jersey-svg" viewBox="0 0 100 92" aria-hidden="true">
+      <defs><clipPath id="${id}"><path d="${path}"/></clipPath></defs>
+      <g clip-path="url(#${id})">
+        <rect x="0" y="0" width="50" height="92" fill="${c}"/>
+        <rect x="50" y="0" width="50" height="92" fill="${color2}"/>
+      </g>${outline}
+    </svg>`;
+  }
   return `<svg class="pitch-jersey-svg" viewBox="0 0 100 92" aria-hidden="true">
-    <path d="M30 8 L18 14 L7 31 L20 41 L26 33 L26 84 L74 84 L74 33 L80 41 L93 31 L82 14 L70 8 C64 19 36 19 30 8 Z"
-      fill="${c}" stroke="rgba(0,0,0,0.28)" stroke-width="2" stroke-linejoin="round"/>
+    <path d="${path}" fill="${c}" stroke="rgba(0,0,0,0.28)" stroke-width="2" stroke-linejoin="round"/>
   </svg>`;
 }
 
@@ -3223,7 +3261,7 @@ function pitchPitchLines() {
   </svg>`;
 }
 
-function pitchPlayer(player, slotLabel, x, y, color) {
+function pitchPlayer(player, slotLabel, x, y, color, color2) {
   if (!player) {
     return `<div class="pitch-player pitch-player-empty" style="left:${x}%;top:${y}%;">
       <div class="pitch-jersey">${pitchJerseySvg("#39414f")}</div>
@@ -3231,7 +3269,7 @@ function pitchPlayer(player, slotLabel, x, y, color) {
     </div>`;
   }
   return `<div class="pitch-player" style="left:${x}%;top:${y}%;">
-    <div class="pitch-jersey">${pitchJerseySvg(color)}<span class="pitch-ovr">${player.overall}</span></div>
+    <div class="pitch-jersey">${pitchJerseySvg(color, color2)}<span class="pitch-ovr">${player.overall}</span></div>
     <span class="pitch-name" title="${player.name}">${player.name}</span>
   </div>`;
 }
@@ -3248,9 +3286,10 @@ function pitchLineup(team, lineup, bench, formationName) {
   const formation = formationName || (lineup && lineup.formation) || "4-2-3-1";
   const slots = (lineup && lineup.slots) || FORMATIONS[formation] || FORMATIONS["4-2-3-1"];
   const coords = FORMATION_COORDS[formation] || FORMATION_COORDS["4-2-3-1"];
-  const color = (team && team.color) || "#2e90ff";
+  const color = getTeamColor(team);
+  const color2 = getTeamColor2(team);
   const players = coords.map((c, i) =>
-    pitchPlayer(lineup ? lineup[i] : null, slots[i] || "", c[0], c[1], color)
+    pitchPlayer(lineup ? lineup[i] : null, slots[i] || "", c[0], c[1], color, color2)
   ).join("");
   const subs = (bench || []).filter(Boolean);
   return `
@@ -4335,7 +4374,7 @@ function teamCell(team) {
 }
 
 function crest(team) {
-  return `<span class="crest" style="background:${team.color}">${team.short}</span>`;
+  return `<span class="crest" style="background:${getTeamColorCss(team)}">${team.short}</span>`;
 }
 
 function renderForm(form) {
