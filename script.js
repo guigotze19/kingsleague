@@ -69,6 +69,16 @@ const FORMATIONS = {
   "3-5-2": ["GK", "CB", "CB", "CB", "CDM", "CM", "CM", "RW", "LW", "ST", "ST"]
 };
 const AVAILABLE_FORMATIONS = Object.keys(FORMATIONS);
+// Pitch coordinates [x%, y%] per slot, index-aligned with FORMATIONS.
+// y: 0 = top (attack), 100 = bottom (own goal / GK).
+const FORMATION_COORDS = {
+  "4-3-3":   [[50,90],[85,70],[63,74],[37,74],[15,70],[50,55],[70,45],[30,45],[80,22],[50,15],[20,22]],
+  "4-2-3-1": [[50,90],[85,71],[62,75],[38,75],[15,71],[63,55],[37,55],[80,30],[50,35],[20,30],[50,13]],
+  "4-4-2":   [[50,90],[85,69],[63,73],[37,73],[15,69],[82,47],[60,49],[40,49],[18,47],[62,18],[38,18]],
+  "4-3-1-2": [[50,90],[85,70],[63,74],[37,74],[15,70],[50,57],[72,49],[28,49],[50,34],[63,16],[37,16]],
+  "5-4-1":   [[50,90],[88,67],[68,73],[50,76],[32,73],[12,67],[82,45],[61,48],[39,48],[18,45],[50,16]],
+  "3-5-2":   [[50,90],[68,73],[50,76],[32,73],[50,57],[70,49],[30,49],[85,40],[15,40],[62,16],[38,16]]
+};
 const COMPETITION_KEYS = ["all", "Kings League", "Prince Cup", "Joker Supercup"];
 const DEFAULT_SIMULATION_SETTINGS = {
   randomnessLevel: 50,
@@ -3087,17 +3097,7 @@ function teamSetupCard(title, team, matchId, settings, lineup, bench, strength, 
         <span>${team.defaultMentality}</span>
         <span>Strength ${strength}</span>
       </div>
-      <div class="compact-lineup-grid">
-        <div class="mini-list">
-          <strong>Starting XI</strong>
-          ${lineup.filter(Boolean).map(playerLine).join("")}
-        </div>
-        <div class="mini-list compact-bench">
-          <strong>Bench</strong>
-          ${bench.slice(0, 5).map(playerLine).join("")}
-          ${bench.length > 5 ? `<span>+${bench.length - 5} more players</span>` : ""}
-        </div>
-      </div>
+      ${pitchLineup(team, lineup, bench, settings.preferredFormation)}
       ${validation && !validation.valid ? `<div class="lineup-warning">${validation.errors.join("<br>")}</div>` : ""}
     </article>
   `;
@@ -3114,14 +3114,7 @@ function teamPreviewCard(team, lineup, bench, strength, validation) {
         <span>${team.defaultMentality}</span>
         <span>Strength ${strength}</span>
       </div>
-      <div class="mini-list">
-        <strong>Starting XI</strong>
-        ${lineup.filter(Boolean).map(playerLine).join("")}
-      </div>
-      <div class="mini-list">
-        <strong>Bench</strong>
-        ${bench.slice(0, 9).map(playerLine).join("")}
-      </div>
+      ${pitchLineup(team, lineup, bench, lineup.formation)}
       ${validation && !validation.valid ? `<div class="lineup-warning">${validation.errors.join("<br>")}</div>` : ""}
     </article>
   `;
@@ -3209,6 +3202,71 @@ function lineupPlayerOptions(players, selectedId, slot) {
 
 function playerLine(player) {
   return `<span>${player.position} ${player.name} - OVR ${player.overall}${player.playerStyle ? ` - ${player.playerStyle}` : ""}</span>`;
+}
+
+function pitchJerseySvg(color) {
+  const c = color || "#2e90ff";
+  return `<svg class="pitch-jersey-svg" viewBox="0 0 100 92" aria-hidden="true">
+    <path d="M30 8 L18 14 L7 31 L20 41 L26 33 L26 84 L74 84 L74 33 L80 41 L93 31 L82 14 L70 8 C64 19 36 19 30 8 Z"
+      fill="${c}" stroke="rgba(0,0,0,0.28)" stroke-width="2" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+function pitchPitchLines() {
+  return `<svg class="pitch-lines" viewBox="0 0 100 150" preserveAspectRatio="none" aria-hidden="true">
+    <rect x="3" y="3" width="94" height="144" rx="2"/>
+    <circle cx="50" cy="2" r="16"/>
+    <line x1="3" y1="14" x2="97" y2="14"/>
+    <rect x="18" y="112" width="64" height="35"/>
+    <rect x="35" y="131" width="30" height="16"/>
+    <path d="M30 112 A22 22 0 0 0 70 112"/>
+  </svg>`;
+}
+
+function pitchPlayer(player, slotLabel, x, y, color) {
+  if (!player) {
+    return `<div class="pitch-player pitch-player-empty" style="left:${x}%;top:${y}%;">
+      <div class="pitch-jersey">${pitchJerseySvg("#39414f")}</div>
+      <span class="pitch-name">${slotLabel || "—"}</span>
+    </div>`;
+  }
+  return `<div class="pitch-player" style="left:${x}%;top:${y}%;">
+    <div class="pitch-jersey">${pitchJerseySvg(color)}<span class="pitch-ovr">${player.overall}</span></div>
+    <span class="pitch-name" title="${player.name}">${player.name}</span>
+  </div>`;
+}
+
+function pitchSubRow(color, player) {
+  return `<div class="pitch-sub">
+    <span class="pitch-sub-dot" style="background:${color || "#2e90ff"}">${player.position}</span>
+    <span class="pitch-sub-name" title="${player.name}">${player.name}</span>
+    <span class="pitch-sub-ovr">${player.overall}</span>
+  </div>`;
+}
+
+function pitchLineup(team, lineup, bench, formationName) {
+  const formation = formationName || (lineup && lineup.formation) || "4-2-3-1";
+  const slots = (lineup && lineup.slots) || FORMATIONS[formation] || FORMATIONS["4-2-3-1"];
+  const coords = FORMATION_COORDS[formation] || FORMATION_COORDS["4-2-3-1"];
+  const color = (team && team.color) || "#2e90ff";
+  const players = coords.map((c, i) =>
+    pitchPlayer(lineup ? lineup[i] : null, slots[i] || "", c[0], c[1], color)
+  ).join("");
+  const subs = (bench || []).filter(Boolean);
+  return `
+    <div class="pitch-wrap">
+      <div class="pitch" style="--kit:${color};">
+        ${pitchPitchLines()}
+        ${players}
+      </div>
+      <div class="pitch-subs">
+        <strong>Substitutes${subs.length ? ` (${subs.length})` : ""}</strong>
+        <div class="pitch-subs-list">
+          ${subs.length ? subs.map((p) => pitchSubRow(color, p)).join("") : `<span class="pitch-sub-empty">No substitutes</span>`}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function formationOptions(selected) {
